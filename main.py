@@ -99,7 +99,8 @@ def train(model, X_train, y_train, X_val, y_val,
 def hyperparameter_search(X_train, y_train, X_val, y_val, 
                           learning_rates = [1e-3, 1e-4], 
                           hidden_sizes = [50, 100], 
-                          reg_strengths = [1e-3, 1e-4]):
+                          reg_strengths = [1e-3, 1e-4],
+                          num_iters=3000):
     print('Search hyperparameter learning_rates in {learning_rates}, hidden_sizes in {hidden_sizes}, reg_strengths in {reg_strengths}')
 
     best_val_acc = 0
@@ -109,7 +110,7 @@ def hyperparameter_search(X_train, y_train, X_val, y_val,
         for hs in hidden_sizes:
             for reg in reg_strengths:
                 model = MLP(input_size=32 * 32 * 3, hidden_size=hs, output_size=10)
-                model = train(model, X_train, y_train, X_val, y_val, learning_rate=lr, reg=reg)
+                model = train(model, X_train, y_train, X_val, y_val, learning_rate=lr, reg=reg, num_iters=num_iters)
                 val_acc = (predict(model, X_val) == y_val).mean()
                 print('lr %e, hidden_size %d, reg %e, val acc: %.2f%%' % (lr, hs, reg, val_acc * 100))
                 if val_acc > best_val_acc:
@@ -136,6 +137,7 @@ if __name__ == "__main__":
     learning_rates = [1e-3, 5e-4] 
     hidden_sizes = [50, 100]
     reg_strengths = [1e-3, 1e-4]
+    num_iters = 3000
 
 
     # 加载数据集
@@ -158,7 +160,8 @@ if __name__ == "__main__":
     best_hparams = hyperparameter_search(X_train, y_train, X_val, y_val, 
                                          learning_rates=learning_rates,
                                          hidden_sizes=hidden_sizes,
-                                         reg_strengths=reg_strengths
+                                         reg_strengths=reg_strengths,
+                                         num_iters=num_iters
                                          )
 
     # 使用最佳超参数训练模型
@@ -166,7 +169,7 @@ if __name__ == "__main__":
     best_model = train(best_model, X_train, y_train, X_val, y_val, 
                        learning_rate=best_hparams['learning_rate'],
                        reg=best_hparams['reg'],
-                       num_iters=3000)
+                       num_iters=num_iters)
 
     with open(os.path.join(root_dir, 'best_params.pkl'), 'wb') as f:
         pickle.dump(best_model.params, f)
